@@ -1,0 +1,23 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1fa2ff"/>
+      <stop offset="50%" style="stop-color:#12d6df"/>
+      <stop offset="100%" style="stop-color:#7579ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <circle cx="190" cy="195" r="55" fill="rgba(255,220,80,0.9)"/>
+  <g stroke="rgba(255,220,80,0.85)" stroke-width="14" stroke-linecap="round">
+    <line x1="190" y1="100" x2="190" y2="118"/>
+    <line x1="190" y1="272" x2="190" y2="290"/>
+    <line x1="95" y1="195" x2="113" y2="195"/>
+    <line x1="267" y1="195" x2="285" y2="195"/>
+    <line x1="122" y1="127" x2="135" y2="140"/>
+    <line x1="245" y1="250" x2="258" y2="263"/>
+    <line x1="258" y1="127" x2="245" y2="140"/>
+    <line x1="135" y1="250" x2="122" y2="263"/>
+  </g>
+  <path d="M380 320 a70 70 0 0 0-133-30 A77 77 0 0 0 182 360 a70 70 0 0 0 70 70 h128 a56 56 0 0 0 0-110z" fill="rgba(255,255,255,0.92)"/>
+  <path d="M290 255 a48 48 0 0 0-91-20 A53 53 0 0 0 148 280 a48 48 0 0 0 48 48 h94 a40 40 0 0 0 0-73z" fill="rgba(255,255,255,0.75)"/>
+</svg>
