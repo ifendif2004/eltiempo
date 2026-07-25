@@ -3,9 +3,9 @@
 // Estrategia: Cache-First para assets, Network-First para API
 // ============================================================
 
-const CACHE_NAME = 'eltiempo-v1.0.0';
-const STATIC_CACHE = 'eltiempo-static-v1.0.0';
-const API_CACHE = 'eltiempo-api-v1.0.0';
+const CACHE_NAME = 'eltiempo-v1.0.1';
+const STATIC_CACHE = 'eltiempo-static-v1.0.1';
+const API_CACHE = 'eltiempo-api-v1.0.1';
 
 // Assets estáticos para cachear en la instalación
 const STATIC_ASSETS = [
