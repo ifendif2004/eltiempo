@@ -853,3 +853,352 @@ header {
 .theme-toggle-btn:active {
   transform: scale(0.93);
 }
+
+/* =============================================
+   MAPA INTERACTIVO - SECCIÓN COMPLETA
+   ============================================= */
+.map-section {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+/* ---- Header del mapa ---- */
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.map-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-main);
+  opacity: 0.9;
+}
+
+.map-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.map-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Botón de capa */
+.map-layer-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: var(--font-main);
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: all var(--transition-speed) ease;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+
+.map-layer-toggle:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-focus);
+  transform: translateY(-1px);
+}
+
+/* Botón colapsar/expandir */
+.map-collapse-btn {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed) ease;
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+}
+
+.map-collapse-btn:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-focus);
+  transform: scale(1.08);
+}
+
+#map-collapse-icon {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#map-collapse-icon.rotated {
+  transform: rotate(180deg);
+}
+
+/* ---- Wrapper con animación ---- */
+.map-wrapper {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  transition: height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.35s ease;
+  height: 360px;
+  opacity: 1;
+}
+
+.map-wrapper.collapsed {
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- Contenedor Leaflet ---- */
+.leaflet-map-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  cursor: crosshair !important;
+}
+
+/* ---- Hint de instrucción ---- */
+.map-hint {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 10, 20, 0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  pointer-events: none;
+  z-index: 600;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  white-space: nowrap;
+}
+
+.map-hint.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+}
+
+/* ---- Popup de ciudad seleccionada ---- */
+.map-city-popup {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: rgba(15, 20, 40, 0.92);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  padding: 12px 18px;
+  z-index: 700;
+  pointer-events: none;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s ease;
+  opacity: 0;
+  min-width: 200px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.map-city-popup.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.map-popup-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.map-popup-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.map-popup-load-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, var(--accent-color), #4fc3f7);
+  border: none;
+  color: #fff;
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: var(--font-main);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.map-popup-load-btn:hover {
+  filter: brightness(1.15);
+  transform: scale(1.04);
+}
+
+.map-popup-load-btn:active {
+  transform: scale(0.96);
+}
+
+/* ---- Overrides de Leaflet para glassmorphism ---- */
+.leaflet-control-attribution {
+  background: rgba(10, 10, 20, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  font-size: 0.65rem !important;
+  border-radius: 8px !important;
+}
+
+.leaflet-control-attribution a {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.leaflet-control-zoom a {
+  background: rgba(15, 20, 40, 0.85) !important;
+  backdrop-filter: blur(10px) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  font-size: 18px !important;
+  line-height: 28px !important;
+  transition: background 0.2s, color 0.2s !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: rgba(0, 242, 254, 0.25) !important;
+  color: #fff !important;
+}
+
+.leaflet-control-zoom {
+  border: none !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Marcador personalizado pulsante */
+.map-marker-pulse {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.6);
+  animation: mapMarkerPulse 1.8s ease-out infinite;
+}
+
+@keyframes mapMarkerPulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.7); }
+  70% { box-shadow: 0 0 0 12px rgba(0, 242, 254, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .map-wrapper {
+    height: 280px;
+  }
+
+  .map-hint {
+    font-size: 0.72rem;
+    padding: 6px 12px;
+  }
+
+  .map-popup-name {
+    max-width: 110px;
+    font-size: 0.85rem;
+  }
+
+  .map-popup-load-btn {
+    padding: 7px 12px;
+    font-size: 0.78rem;
+  }
+
+  .map-layer-toggle span {
+    display: none;
+  }
+}
+
+/* Tema claro — ajustes de mapa */
+body.light-mode .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.75) !important;
+  color: rgba(30, 30, 60, 0.55) !important;
+}
+
+body.light-mode .leaflet-control-attribution a {
+  color: rgba(30, 30, 60, 0.65) !important;
+}
+
+body.light-mode .leaflet-control-zoom a {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #1a1a2e !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-mode .map-hint {
+  background: rgba(255, 255, 255, 0.82);
+  color: rgba(30, 30, 60, 0.85);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .map-city-popup {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .map-popup-name {
+  color: #1a1a2e;
+}
+
+/* =============================================
+   FOOTER
+   ============================================= */
+.app-footer {
+  text-align: center;
+  padding: 10px 20px 14px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.app-footer a {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity var(--transition-speed) ease;
+}
+
+.app-footer a:hover {
+  opacity: 0.75;
+  text-decoration: underline;
+}

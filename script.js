@@ -1,6 +1,8 @@
 // --- DATOS Y ATAJOS PREDEFINIDOS ---
 const QUICK_CITIES = [
   { name: "Cárchel", admin: "Jaén, Andalucía", lat: 37.6524, lon: -3.6364 },
+  { name: "Breña Alta", admin: "La Palma, Canarias", lat: 28.6480, lon: -17.7954 },
+  { name: "Montserrat Park", admin: "Barcelona, Cataluña", lat: 41.6082, lon: 1.7414 },
   { name: "Madrid", admin: "Comunidad de Madrid", lat: 40.4168, lon: -3.7038 },
   { name: "Barcelona", admin: "Cataluña", lat: 41.3888, lon: 2.1590 },
   { name: "Sevilla", admin: "Andalucía", lat: 37.3828, lon: -5.9732 },
@@ -72,9 +74,22 @@ const mPressure = document.getElementById('m-pressure');
 const hourlyForecastEl = document.getElementById('hourly-forecast');
 const dailyForecastEl = document.getElementById('daily-forecast');
 
+// Elementos del Mapa
+const mapSection = document.getElementById('map-section');
+const mapWrapper = document.getElementById('map-wrapper');
+const mapHint = document.getElementById('map-hint');
+const mapCityPopup = document.getElementById('map-city-popup');
+const mapPopupName = document.getElementById('map-popup-name');
+
 // --- ESTADO DE LA APLICACIÓN ---
 let currentActiveCity = QUICK_CITIES[0]; // Por defecto: Cárchel
 let debounceTimer;
+
+// --- ESTADO DEL MAPA ---
+let map;
+let currentMapLayer = 'osm';
+let mapMarker;
+let mapHintShown;
 
 // --- MAPA DE ICONOS SVG PREMIUM CON ANIMACIONES ---
 function getSvgIcon(iconName) {
@@ -206,6 +221,8 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchWeather(currentActiveCity);
   // Inicializar el tema (claro/oscuro)
   inicializarTema();
+  // Inicializar mapa interactivo
+  inicializarMapa();
 
   // Event Listeners
   searchInput.addEventListener('input', manejarBusqueda);
@@ -255,7 +272,7 @@ function renderQuickCities() {
       // Remover clases active anteriores
       document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      
+
       currentActiveCity = city;
       fetchWeather(city);
     });
@@ -276,13 +293,13 @@ function manejarBusqueda(e) {
   debounceTimer = setTimeout(async () => {
     try {
       // Filtrado directo a España (&country=ES)
-      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=es&country=ES`);
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=10&language=es&countryId=ES`);
       const data = await res.json();
-      
+
       if (data.results && data.results.length > 0) {
         // Filtrado secundario por seguridad (código ES)
         const spanishResults = data.results.filter(item => item.country_code === 'ES');
-        
+
         if (spanishResults.length > 0) {
           mostrarSugerencias(spanishResults);
         } else {
@@ -304,10 +321,10 @@ function mostrarSugerencias(results) {
   results.forEach(place => {
     const item = document.createElement('div');
     item.className = "suggestion-item";
-    
+
     // Formatear administración/provincia
     const adminField = place.admin1 ? `${place.admin1}` : 'España';
-    
+
     item.innerHTML = `
       <div>
         <div class="suggestion-name">${place.name}</div>
@@ -319,17 +336,17 @@ function mostrarSugerencias(results) {
     item.addEventListener('click', () => {
       suggestionsDropdown.classList.remove('active');
       searchInput.value = "";
-      
+
       // Desactivar atajos rápidos ya que se busca manualmente
       document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
-      
+
       const selectedCity = {
         name: place.name,
         admin: adminField,
         lat: place.latitude,
         lon: place.longitude
       };
-      
+
       currentActiveCity = selectedCity;
       fetchWeather(selectedCity);
     });
@@ -369,7 +386,7 @@ function usarGeolocalizacion() {
           }
         });
         const data = await res.json();
-        
+
         let name = "Ubicación GPS";
         let admin = "España";
 
@@ -395,7 +412,7 @@ function usarGeolocalizacion() {
     },
     (error) => {
       setLoading(false);
-      switch(error.code) {
+      switch (error.code) {
         case error.PERMISSION_DENIED:
           mostrarError("Has denegado el permiso de geolocalización.");
           break;
@@ -419,14 +436,14 @@ async function fetchWeather(city) {
   setLoading(true);
   ocultarError();
 
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,uv_index&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max&timezone=auto`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,uv_index&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max&timezone=auto&forecast_days=14`;
 
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error("Error en la conexión con la API meteorológica.");
-    
+
     const data = await res.json();
-    
+
     // Actualizar interfaz
     actualizarClimaActual(city, data.current, data.daily);
     actualizarMetricas(data.current);
@@ -445,10 +462,10 @@ async function fetchWeather(city) {
 function actualizarClimaActual(city, current, daily) {
   wLocation.textContent = city.name;
   wAdmin.textContent = city.admin;
-  
+
   const temp = Math.round(current.temperature_2m);
   wTemp.textContent = temp;
-  
+
   const maxTemp = Math.round(daily.temperature_2m_max[0]);
   const minTemp = Math.round(daily.temperature_2m_min[0]);
   wTempMax.textContent = `${maxTemp}°`;
@@ -478,17 +495,17 @@ function actualizarClimaActual(city, current, daily) {
 function actualizarMetricas(current) {
   mApparent.textContent = `${Math.round(current.apparent_temperature)}°C`;
   mHumidity.textContent = `${current.relative_humidity_2m}%`;
-  
+
   // Total de precipitación actual (lluvia, chubascos, nieve)
   const prec = current.precipitation;
   mPrecipitation.textContent = prec > 0 ? `${prec.toFixed(1)} mm` : `0.0 mm`;
-  
+
   mWind.textContent = `${Math.round(current.wind_speed_10m)} km/h`;
-  
+
   // Dirección del viento (flecha rotatoria)
   mWindDir.style.transform = `rotate(${current.wind_direction_10m}deg)`;
   mWindDir.title = `Viento del dirección ${current.wind_direction_10m}°`;
-  
+
   mUv.textContent = current.uv_index ? current.uv_index.toFixed(1) : "0.0";
   mPressure.textContent = `${Math.round(current.pressure_msl)} hPa`;
 }
@@ -496,11 +513,11 @@ function actualizarMetricas(current) {
 // --- ACTUALIZAR INTERFAZ: PRONÓSTICO 24 HORAS ---
 function actualizarPronosticoHoras(hourly) {
   hourlyForecastEl.innerHTML = "";
-  
+
   // Obtener hora actual del cliente para mostrar a partir de ella
   const ahora = new Date();
   const horaActualStr = ahora.toISOString().substring(0, 13); // "YYYY-MM-DDTHH"
-  
+
   // Encontrar el índice de inicio en el dataset de la API
   let inicioIdx = 0;
   for (let i = 0; i < hourly.time.length; i++) {
@@ -518,9 +535,9 @@ function actualizarPronosticoHoras(hourly) {
     const temp = Math.round(hourly.temperature_2m[i]);
     const code = hourly.weather_code[i];
     const pop = hourly.precipitation_probability[i]; // Prob. Precipitación
-    
+
     const codeData = WMO_CODES[code] || { icon: "cloudy-day" };
-    
+
     // Decidir icono noche en base al sol en esa hora aproximada (ej. de 21h a 06h es noche)
     const hourNumber = timeVal.getHours();
     const esNoche = hourNumber >= 21 || hourNumber < 6;
@@ -532,14 +549,14 @@ function actualizarPronosticoHoras(hourly) {
     const item = document.createElement('div');
     item.className = "hourly-item animate-fade-in";
     item.style.animationDelay = `${(i - inicioIdx) * 0.03}s`;
-    
+
     item.innerHTML = `
       <span class="hourly-time">${horaStr}</span>
       <div class="hourly-icon">${getSvgIcon(finalIcon)}</div>
       <span class="hourly-temp">${temp}°</span>
       <span class="hourly-pop">${pop > 0 ? pop + '%' : '&nbsp;'}</span>
     `;
-    
+
     hourlyForecastEl.appendChild(item);
   }
 }
@@ -557,7 +574,7 @@ function actualizarPronosticoDiario(daily) {
     const dateVal = new Date(daily.time[i] + 'T00:00:00'); // Añadir T00:00 para evitar desajustes de zona horaria
     let diaNombre = dateVal.toLocaleDateString('es-ES', { weekday: 'long' });
     diaNombre = diaNombre.charAt(0).toUpperCase() + diaNombre.slice(1);
-    
+
     // Si es hoy, poner "Hoy"
     if (i === 0) diaNombre = "Hoy";
 
@@ -565,9 +582,9 @@ function actualizarPronosticoDiario(daily) {
     const tempMin = Math.round(daily.temperature_2m_min[i]);
     const code = daily.weather_code[i];
     const pop = daily.precipitation_probability_max[i]; // Probabilidad máxima de precipitación
-    
+
     const codeData = WMO_CODES[code] || { icon: "cloudy-day" };
-    
+
     // Calcular porcentajes de barra visuales para la temperatura
     const leftPercent = ((tempMin - minGlobal) / rangoGlobal) * 100;
     const widthPercent = ((tempMax - tempMin) / rangoGlobal) * 100;
@@ -575,7 +592,7 @@ function actualizarPronosticoDiario(daily) {
     const item = document.createElement('div');
     item.className = "daily-item animate-fade-in";
     item.style.animationDelay = `${i * 0.05}s`;
-    
+
     item.innerHTML = `
       <span class="daily-name">${diaNombre}</span>
       <div class="daily-icon">${getSvgIcon(codeData.icon)}</div>
@@ -590,7 +607,7 @@ function actualizarPronosticoDiario(daily) {
         <span class="daily-temp-min">${tempMin}°</span>
       </div>
     `;
-    
+
     dailyForecastEl.appendChild(item);
   }
 }
@@ -639,6 +656,176 @@ function mostrarError(text) {
 // Ocultar error
 function ocultarError() {
   errorMsg.classList.remove('active');
+}
+
+// --- MAPA INTERACTIVO (LEAFLET) ---
+
+function inicializarMapa() {
+  try {
+    const mapContainer = document.getElementById('leaflet-map');
+    if (!mapContainer || typeof L === 'undefined') return;
+
+    // Capas de tiles
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    });
+
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      maxZoom: 19
+    });
+
+    // Inicializar mapa centrado en España
+    map = L.map('leaflet-map', {
+      center: [40.4168, -3.7038], // Madrid
+      zoom: 6,
+      zoomControl: false,
+      attributionControl: false
+    });
+
+    // Añadir capa por defecto (OSM)
+    osmLayer.addTo(map);
+
+    // Añadir controles de zoom personalizados (esquina inferior derecha)
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // Añadir atribución personalizada (esquina inferior izquierda)
+    L.control.attribution({ position: 'bottomleft', prefix: false }).addTo(map);
+
+    // Marcador personalizado con animación
+    const pulseIcon = L.divIcon({
+      className: 'map-marker-pulse',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      html: '<div class="map-marker-pulse"></div>'
+    });
+
+    // Evento click en el mapa
+    map.on('click', async (e) => {
+      const { lat, lng } = e.latlng;
+
+      // Ocultar hint después del primer click
+      if (!mapHintShown) {
+        document.getElementById('map-hint').classList.add('hidden');
+        mapHintShown = true;
+      }
+
+      // Actualizar marcador
+      if (mapMarker) {
+        mapMarker.setLatLng([lat, lng]);
+      } else {
+        mapMarker = L.marker([lat, lng], { icon: pulseIcon }).addTo(map);
+      }
+
+      // Reverse geocoding con Nominatim
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`, {
+          headers: {
+            'Accept-Language': 'es',
+            'User-Agent': 'eltiempo.app/1.0 (https://github.com/usuario/eltiempo)'
+          }
+        });
+        const data = await res.json();
+
+        let name = "Ubicación seleccionada";
+        let admin = "España";
+
+        if (data.address) {
+          name = data.address.city || data.address.town || data.address.village || data.address.hamlet || data.address.suburb || "Punto seleccionado";
+          admin = data.address.province || data.address.state || data.address.county || "España";
+        }
+
+        // Mostrar popup con nombre y botón
+        const popup = document.getElementById('map-city-popup');
+        const nameEl = document.getElementById('map-popup-name');
+        const loadBtn = document.getElementById('map-popup-load-btn');
+
+        nameEl.textContent = `${name}, ${admin}`;
+
+        // Guardar coordenadas en el botón para usarlas al hacer click
+        loadBtn.dataset.lat = lat;
+        loadBtn.dataset.lon = lng;
+        loadBtn.dataset.name = name;
+        loadBtn.dataset.admin = admin;
+
+        popup.classList.add('visible');
+      } catch (error) {
+        console.error('Error reverse geocoding:', error);
+        // Fallback: mostrar coordenadas
+        const popup = document.getElementById('map-city-popup');
+        const nameEl = document.getElementById('map-popup-name');
+        const loadBtn = document.getElementById('map-popup-load-btn');
+
+        nameEl.textContent = `Lat: ${lat.toFixed(4)}, Lon: ${lng.toFixed(4)}`;
+        loadBtn.dataset.lat = lat;
+        loadBtn.dataset.lon = lng;
+        loadBtn.dataset.name = `Ubicación (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
+        loadBtn.dataset.admin = "Coordenadas GPS";
+
+        popup.classList.add('visible');
+      }
+    });
+
+    // Click en botón "Ver el tiempo aquí"
+    document.getElementById('map-popup-load-btn').addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      const lat = parseFloat(btn.dataset.lat);
+      const lon = parseFloat(btn.dataset.lon);
+      const name = btn.dataset.name;
+      const admin = btn.dataset.admin;
+
+      // Desactivar botones de ciudades rápidas
+      document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
+
+      const selectedCity = { name, admin, lat, lon };
+      currentActiveCity = selectedCity;
+      fetchWeather(selectedCity);
+
+      // Ocultar popup
+      document.getElementById('map-city-popup').classList.remove('visible');
+    });
+
+    // Toggle capa del mapa
+    document.getElementById('map-layer-btn').addEventListener('click', () => {
+      const label = document.getElementById('map-layer-label');
+
+      if (currentMapLayer === 'osm') {
+        map.removeLayer(osmLayer);
+        satelliteLayer.addTo(map);
+        currentMapLayer = 'satellite';
+        label.textContent = 'Mapa';
+      } else {
+        map.removeLayer(satelliteLayer);
+        osmLayer.addTo(map);
+        currentMapLayer = 'osm';
+        label.textContent = 'Satélite';
+      }
+    });
+
+    // Colapsar/Expandir mapa
+    document.getElementById('map-collapse-btn').addEventListener('click', () => {
+      const wrapper = document.getElementById('map-wrapper');
+      const icon = document.getElementById('map-collapse-icon');
+
+      wrapper.classList.toggle('collapsed');
+      icon.classList.toggle('rotated');
+
+      // Forzar resize del mapa al expandir
+      setTimeout(() => map.invalidateSize(), 450);
+    });
+
+    // Cerrar popup al hacer click fuera
+    document.addEventListener('click', (e) => {
+      const popup = document.getElementById('map-city-popup');
+      const wrapper = document.getElementById('map-wrapper');
+      if (popup.classList.contains('visible') && !wrapper.contains(e.target)) {
+        popup.classList.remove('visible');
+      }
+    });
+  } catch (error) {
+    console.error('Error inicializando mapa:', error);
+  }
 }
 
 // --- TEMA CLARO / OSCURO ---
