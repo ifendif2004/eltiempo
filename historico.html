@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico de Temperaturas — eltiempo.</title>
+  <meta name="description" content="Consulta datos históricos de temperatura para cualquier ubicación. Gráficos interactivos con datos desde 1940 proporcionados por Open-Meteo.">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1fa2ff">
+
+  <!-- iOS / Safari PWA -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="eltiempo.">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96x96.png">
+
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="historico.css">
+</head>
+<body>
+
+  <div class="hist-app">
+
+    <!-- HEADER -->
+    <header class="hist-header">
+      <div class="hist-header-top">
+        <a href="index.html" class="hist-back-btn" id="back-btn" title="Volver al inicio" aria-label="Volver al inicio">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <h1 class="hist-logo">eltiempo<span>.</span></h1>
+        <button id="theme-toggle" class="hist-theme-btn" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"></button>
+      </div>
+
+      <div class="hist-title-section">
+        <div class="hist-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20V10"></path>
+            <path d="M18 20V4"></path>
+            <path d="M6 20v-4"></path>
+          </svg>
+        </div>
+        <div>
+          <h2 class="hist-page-title">Histórico de Temperaturas</h2>
+          <p class="hist-location-label" id="location-label">Cargando ubicación...</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTROLES DE FECHA -->
+    <section class="hist-card hist-controls">
+      <h3 class="hist-section-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        Intervalo de Fechas
+      </h3>
+
+      <div class="hist-date-row">
+        <div class="hist-date-field">
+          <label for="date-start">Fecha de inicio</label>
+          <input type="date" id="date-start" class="hist-date-input">
+        </div>
+        <div class="hist-date-separator">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </div>
+        <div class="hist-date-field">
+          <label for="date-end">Fecha de fin</label>
+          <input type="date" id="date-end" class="hist-date-input">
+        </div>
+      </div>
+
+      <!-- Atajos rápidos -->
+      <div class="hist-quick-ranges">
+        <button class="hist-range-btn" data-range="7d">7 días</button>
+        <button class="hist-range-btn" data-range="30d">30 días</button>
+        <button class="hist-range-btn" data-range="3m">3 meses</button>
+        <button class="hist-range-btn active" data-range="1y">1 año</button>
+        <button class="hist-range-btn" data-range="5y">5 años</button>
+      </div>
+
+      <button id="fetch-btn" class="hist-fetch-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        Consultar Datos
+      </button>
+    </section>
+
+    <!-- GRÁFICO -->
+    <section class="hist-card hist-chart-section">
+      <div class="hist-chart-header">
+        <h3 class="hist-section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg>
+          Temperaturas Históricas
+        </h3>
+        <div class="hist-chart-legend">
+          <span class="hist-legend-item hist-legend-max"><span class="hist-legend-dot"></span> Máxima</span>
+          <span class="hist-legend-item hist-legend-min"><span class="hist-legend-dot"></span> Mínima</span>
+        </div>
+      </div>
+
+      <!-- Loading overlay -->
+      <div id="chart-loading" class="hist-chart-loading">
+        <div class="hist-spinner"></div>
+        <p>Cargando datos históricos...</p>
+      </div>
+
+      <!-- Error message -->
+      <div id="chart-error" class="hist-chart-error"></div>
+
+      <!-- Empty state -->
+      <div id="chart-empty" class="hist-chart-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>
+        <p>Selecciona un rango de fechas y pulsa <strong>Consultar Datos</strong></p>
+      </div>
+
+      <div class="hist-chart-container">
+        <canvas id="temp-chart"></canvas>
+      </div>
+    </section>
+
+    <!-- ESTADÍSTICAS RESUMEN -->
+    <section class="hist-card hist-stats-section" id="stats-section" style="display: none;">
+      <h3 class="hist-section-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8.11 2.79"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+        Resumen del Periodo
+      </h3>
+      <div class="hist-stats-grid">
+        <div class="hist-stat-card hist-stat-max">
+          <div class="hist-stat-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+          </div>
+          <div class="hist-stat-info">
+            <span class="hist-stat-label">Máxima registrada</span>
+            <span class="hist-stat-value" id="stat-max">--°C</span>
+            <span class="hist-stat-detail" id="stat-max-date"></span>
+          </div>
+        </div>
+        <div class="hist-stat-card hist-stat-min">
+          <div class="hist-stat-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+          </div>
+          <div class="hist-stat-info">
+            <span class="hist-stat-label">Mínima registrada</span>
+            <span class="hist-stat-value" id="stat-min">--°C</span>
+            <span class="hist-stat-detail" id="stat-min-date"></span>
+          </div>
+        </div>
+        <div class="hist-stat-card hist-stat-avg">
+          <div class="hist-stat-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          </div>
+          <div class="hist-stat-info">
+            <span class="hist-stat-label">Media del periodo</span>
+            <span class="hist-stat-value" id="stat-avg">--°C</span>
+          </div>
+        </div>
+        <div class="hist-stat-card hist-stat-range">
+          <div class="hist-stat-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="2" x2="12" y2="9"></line><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"></line><line x1="18.36" y1="10.22" x2="19.78" y2="11.64"></line></svg>
+          </div>
+          <div class="hist-stat-info">
+            <span class="hist-stat-label">Amplitud térmica</span>
+            <span class="hist-stat-value" id="stat-range">--°C</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="hist-footer">
+      <p>Datos históricos proporcionados por <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> (ERA5 / ERA5-Land / ECMWF IFS) — Licencia CC BY 4.0</p>
+    </footer>
+
+  </div>
+
+  <script src="historico.js"></script>
+</body>
+</html>

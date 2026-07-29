@@ -3,8 +3,8 @@
 // Estrategia: Cache-First para assets, Network-First para API
 // ============================================================
 
-const STATIC_CACHE = 'eltiempo-static-v1.0.5';
-const API_CACHE = 'eltiempo-api-v1.0.5';
+const STATIC_CACHE = 'eltiempo-static-v1.0.6';
+const API_CACHE = 'eltiempo-api-v1.0.6';
 
 // Assets estáticos para cachear en la instalación
 const STATIC_ASSETS = [
@@ -12,6 +12,9 @@ const STATIC_ASSETS = [
   './index.html',
   './style.css',
   './script.js',
+  './historico.html',
+  './historico.css',
+  './historico.js',
   './manifest.json',
   './icons/icon-72x72.png',
   './icons/icon-96x96.png',
@@ -21,12 +24,14 @@ const STATIC_ASSETS = [
   './icons/icon-192x192.png',
   './icons/icon-384x384.png',
   './icons/icon-512x512.png',
-  'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap',
+  'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js'
 ];
 
 // URLs de API externas (network-first con fallback a cache)
 const API_URLS = [
   'api.open-meteo.com',
+  'archive-api.open-meteo.com',
   'air-quality-api.open-meteo.com',
   'geocoding-api.open-meteo.com',
   'nominatim.openstreetmap.org'

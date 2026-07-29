@@ -121,12 +121,12 @@ function getSvgIcon(iconName) {
       </svg>
     `,
     moony: `
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ECEFF1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="rgba(236, 239, 241, 0.15)" class="anim-float"></path>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor" fill-opacity="0.15" class="anim-float"></path>
       </svg>
     `,
     "cloudy-day": `
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ECEFF1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <g class="anim-spin" style="transform: translate(-3px, -3px); transform-origin: 10px 10px;">
           <circle cx="10" cy="10" r="3" fill="#FFC107" stroke="#FFC107"></circle>
           <line x1="10" y1="4" x2="10" y2="5" stroke="#FFC107"></line>
@@ -134,13 +134,13 @@ function getSvgIcon(iconName) {
           <line x1="4" y1="10" x2="5" y2="10" stroke="#FFC107"></line>
           <line x1="15" y1="10" x2="16" y2="10" stroke="#FFC107"></line>
         </g>
-        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="rgba(236, 239, 241, 0.2)" class="anim-float"></path>
+        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="currentColor" fill-opacity="0.2" class="anim-float"></path>
       </svg>
     `,
     "cloudy-night": `
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ECEFF1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 12.79A9 9 0 0 1 11.21 3" fill="none" stroke="#ECEFF1" style="transform: translate(-2px, -2px);"></path>
-        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="rgba(236, 239, 241, 0.2)" class="anim-float"></path>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 12.79A9 9 0 0 1 11.21 3" fill="none" style="transform: translate(-2px, -2px);"></path>
+        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="currentColor" fill-opacity="0.2" class="anim-float"></path>
       </svg>
     `,
     overcast: `
@@ -150,15 +150,15 @@ function getSvgIcon(iconName) {
       </svg>
     `,
     fog: `
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ECEFF1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="rgba(236, 239, 241, 0.1)" class="anim-float"></path>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="currentColor" fill-opacity="0.1" class="anim-float"></path>
         <line x1="4" y1="21" x2="20" y2="21" class="anim-wind" stroke-width="1.5"></line>
         <line x1="6" y1="23" x2="18" y2="23" class="anim-wind" style="animation-delay: 1s" stroke-width="1.5"></line>
       </svg>
     `,
     "rain-light": `
       <svg viewBox="0 0 24 24" fill="none" stroke="#4fc3f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="rgba(236, 239, 241, 0.2)" stroke="#ECEFF1" class="anim-float"></path>
+        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" class="anim-float"></path>
         <line x1="8" y1="20" x2="8" y2="22" class="anim-rain-1"></line>
         <line x1="12" y1="20" x2="12" y2="22" class="anim-rain-2"></line>
         <line x1="16" y1="20" x2="16" y2="22" class="anim-rain-3"></line>
@@ -166,7 +166,7 @@ function getSvgIcon(iconName) {
     `,
     "rain-moderate": `
       <svg viewBox="0 0 24 24" fill="none" stroke="#29b6f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="rgba(236, 239, 241, 0.15)" stroke="#ECEFF1" class="anim-float"></path>
+        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="currentColor" fill-opacity="0.15" stroke="currentColor" class="anim-float"></path>
         <line x1="6" y1="20" x2="6" y2="22" class="anim-rain-1"></line>
         <line x1="10" y1="20" x2="10" y2="22" class="anim-rain-2"></line>
         <line x1="14" y1="20" x2="14" y2="22" class="anim-rain-3"></line>
@@ -184,30 +184,30 @@ function getSvgIcon(iconName) {
     `,
     "snow-light": `
       <svg viewBox="0 0 24 24" fill="none" stroke="#b3e5fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="rgba(255,255,255,0.2)" stroke="#ECEFF1" class="anim-float"></path>
-        <circle cx="8" cy="20" r="1" fill="#fff" class="anim-snow-1"></circle>
-        <circle cx="12" cy="21" r="1.2" fill="#fff" class="anim-snow-2"></circle>
-        <circle cx="16" cy="20" r="1" fill="#fff" class="anim-snow-3"></circle>
+        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" class="anim-float"></path>
+        <circle cx="8" cy="20" r="1" fill="currentColor" class="anim-snow-1"></circle>
+        <circle cx="12" cy="21" r="1.2" fill="currentColor" class="anim-snow-2"></circle>
+        <circle cx="16" cy="20" r="1" fill="currentColor" class="anim-snow-3"></circle>
       </svg>
     `,
     "snow-moderate": `
       <svg viewBox="0 0 24 24" fill="none" stroke="#e1f5fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="rgba(255,255,255,0.2)" stroke="#ECEFF1" class="anim-float"></path>
-        <path d="M8 20h0.01" stroke-width="3" stroke="#fff" class="anim-snow-1"></path>
-        <path d="M12 21h0.01" stroke-width="3" stroke="#fff" class="anim-snow-2"></path>
-        <path d="M16 20h0.01" stroke-width="3" stroke="#fff" class="anim-snow-3"></path>
+        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" class="anim-float"></path>
+        <path d="M8 20h0.01" stroke-width="3" stroke="currentColor" class="anim-snow-1"></path>
+        <path d="M12 21h0.01" stroke-width="3" stroke="currentColor" class="anim-snow-2"></path>
+        <path d="M16 20h0.01" stroke-width="3" stroke="currentColor" class="anim-snow-3"></path>
       </svg>
     `,
     "snow-heavy": `
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="rgba(255,255,255,0.3)" stroke="#ffffff" class="anim-float"></path>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="currentColor" fill-opacity="0.3" class="anim-float"></path>
         <path d="M6 21l2-2M8 21l-2-2" class="anim-snow-1" stroke-width="1.5"></path>
         <path d="M12 22v-3M10.5 20.5h3" class="anim-snow-2" stroke-width="1.5"></path>
         <path d="M17 21l-2-2M15 21l2-2" class="anim-snow-3" stroke-width="1.5"></path>
       </svg>
     `,
     storm: `
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ECEFF1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M19 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 3 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="rgba(55, 71, 79, 0.4)" class="anim-float"></path>
         <!-- Rayo -->
         <path d="M13 18l-3 4v-4H8l5-6v4h2z" fill="#FFEB3B" stroke="#FDD835" stroke-width="1" class="anim-flash"></path>
@@ -549,6 +549,24 @@ function actualizarClimaActual(city, current, daily) {
 
   // Inyectar el SVG animado correspondiente
   wVisual.innerHTML = getSvgIcon(finalIcon);
+
+  // Botón Histórico dinámico (para mantener index.html intacto)
+  let histBtn = document.getElementById('btn-historico');
+  if (!histBtn) {
+    histBtn = document.createElement('a');
+    histBtn.id = 'btn-historico';
+    histBtn.className = 'historico-link-btn';
+    histBtn.title = 'Ver datos históricos de temperatura';
+    histBtn.innerHTML = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>
+      Ver Histórico
+    `;
+    const locInfo = document.querySelector('.location-info');
+    if (locInfo) {
+      locInfo.appendChild(histBtn);
+    }
+  }
+  histBtn.href = `historico.html?lat=${city.lat}&lon=${city.lon}&name=${encodeURIComponent(city.name)}&admin=${encodeURIComponent(city.admin || '')}`;
 }
 
 // --- ACTUALIZAR INTERFAZ: MÉTRICAS AVANZADAS ---

@@ -10,6 +10,7 @@
   --text-muted: rgba(255, 255, 255, 0.7);
   --text-dark: #121212;
   --accent-color: #00f2fe;
+  --icon-night: #ECEFF1;
   --transition-speed: 0.3s;
   --suggestions-bg: rgba(20, 25, 35, 0.97);
   --metric-card-bg: rgba(255, 255, 255, 0.05);
@@ -27,6 +28,7 @@ body.light-mode {
   --text-muted: rgba(45, 42, 38, 0.6);
   --text-dark: #2d2a26;
   --accent-color: #e07b39;
+  --icon-night: #546E7A;
   --suggestions-bg: rgba(255, 252, 248, 0.98);
   --metric-card-bg: rgba(255, 255, 255, 0.7);
   --metric-card-border: rgba(0, 0, 0, 0.06);
@@ -409,6 +411,7 @@ body.light-mode .city-btn.active {
   align-items: center;
   width: 140px;
   height: 140px;
+  color: var(--icon-night);
 }
 
 .current-visual svg {
@@ -523,6 +526,7 @@ body.light-mode .city-btn.active {
 .hourly-icon {
   width: 35px;
   height: 35px;
+  color: var(--icon-night);
 }
 
 .hourly-icon svg {
@@ -573,6 +577,7 @@ body.light-mode .city-btn.active {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--icon-night);
 }
 
 .daily-icon svg {
@@ -1358,4 +1363,39 @@ body.light-mode .update-banner {
   background: rgba(255, 252, 248, 0.95);
   border-color: rgba(224, 123, 57, 0.3);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* BOTÓN HISTÓRICO EN LA PÁGINA PRINCIPAL */
+.historico-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--accent-color);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  width: fit-content;
+  transition: all var(--transition-speed) ease;
+  backdrop-filter: blur(8px);
+}
+
+.historico-link-btn:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-focus);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+body.light-mode .historico-link-btn {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .historico-link-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
 }
