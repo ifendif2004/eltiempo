@@ -5,7 +5,7 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "background_color": "#0f2027",
   "theme_color": "#1fa2ff",
   "lang": "es",
@@ -79,7 +79,7 @@
       "short_name": "GPS",
       "description": "Ver el tiempo en mi ubicación actual",
       "url": "./index.html?action=gps",
-      "icons": [{ "src": "./icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "./icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }]
     }
   ]
 }

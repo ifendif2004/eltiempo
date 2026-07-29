@@ -3,9 +3,8 @@
 // Estrategia: Cache-First para assets, Network-First para API
 // ============================================================
 
-const CACHE_NAME = 'eltiempo-v1.0.2';
-const STATIC_CACHE = 'eltiempo-static-v1.0.2';
-const API_CACHE = 'eltiempo-api-v1.0.2';
+const STATIC_CACHE = 'eltiempo-static-v1.0.5';
+const API_CACHE = 'eltiempo-api-v1.0.5';
 
 // Assets estáticos para cachear en la instalación
 const STATIC_ASSETS = [
@@ -14,7 +13,13 @@ const STATIC_ASSETS = [
   './style.css',
   './script.js',
   './manifest.json',
+  './icons/icon-72x72.png',
+  './icons/icon-96x96.png',
+  './icons/icon-128x128.png',
+  './icons/icon-144x144.png',
+  './icons/icon-152x152.png',
   './icons/icon-192x192.png',
+  './icons/icon-384x384.png',
   './icons/icon-512x512.png',
   'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap'
 ];
@@ -22,6 +27,7 @@ const STATIC_ASSETS = [
 // URLs de API externas (network-first con fallback a cache)
 const API_URLS = [
   'api.open-meteo.com',
+  'air-quality-api.open-meteo.com',
   'geocoding-api.open-meteo.com',
   'nominatim.openstreetmap.org'
 ];
@@ -30,19 +36,16 @@ const API_URLS = [
 // INSTALL: Pre-cachear todos los assets estáticos
 // ============================================================
 self.addEventListener('install', (event) => {
-  console.log('[SW] Instalando service worker...');
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => {
-        console.log('[SW] Cacheando assets estáticos...');
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
-        console.log('[SW] Assets cacheados correctamente.');
         return self.skipWaiting(); // Activar inmediatamente
       })
-      .catch((err) => {
-        console.error('[SW] Error al cachear assets:', err);
+      .catch(() => {
+        // Error al cachear assets - silenciar
       })
   );
 });
@@ -51,7 +54,6 @@ self.addEventListener('install', (event) => {
 // ACTIVATE: Limpiar caches antiguas
 // ============================================================
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activando service worker...');
   event.waitUntil(
     caches.keys()
       .then((cacheNames) => {
@@ -59,13 +61,11 @@ self.addEventListener('activate', (event) => {
           cacheNames
             .filter((name) => name !== STATIC_CACHE && name !== API_CACHE)
             .map((name) => {
-              console.log('[SW] Eliminando cache antigua:', name);
               return caches.delete(name);
             })
         );
       })
       .then(() => {
-        console.log('[SW] Service worker activado y caches limpias.');
         return self.clients.claim(); // Tomar control de todos los clientes
       })
   );
@@ -141,8 +141,8 @@ async function networkFirstStrategy(request, cacheName) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  } catch (error) {
-    console.warn('[SW] Red no disponible, sirviendo desde cache:', request.url);
+  } catch {
+    // Red no disponible - servir desde cache
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
@@ -166,8 +166,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'eltiempo.';
   const options = {
     body: data.body || 'Actualización del tiempo disponible.',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
+    icon: './icons/icon-192x192.png',
+    badge: './icons/icon-72x72.png',
     vibrate: [200, 100, 200],
     data: { url: data.url || '/' }
   };

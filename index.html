@@ -14,14 +14,13 @@
   <!-- Theme Color (barra del navegador en Android) -->
   <meta name="theme-color" content="#1fa2ff">
   <meta name="msapplication-TileColor" content="#1fa2ff">
-  <meta name="msapplication-TileImage" content="icons/icon-144x144.png">
+  <meta name="msapplication-TileImage" content="https://ifendif2004.github.io/eltiempo/icons/icon-144x144.png">
 
   <!-- iOS / Safari PWA -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="eltiempo.">
-  <link rel="apple-touch-icon" href="icons/icon-152x152.png">
   <link rel="apple-touch-icon" sizes="72x72" href="icons/icon-72x72.png">
   <link rel="apple-touch-icon" sizes="96x96" href="icons/icon-96x96.png">
   <link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128x128.png">
@@ -30,14 +29,13 @@
   <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
 
   <!-- Favicon estándar -->
-  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-72x72.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96x96.png">
 
   <!-- Open Graph (compartir en redes sociales) -->
   <meta property="og:title" content="eltiempo. - Clima en España">
   <meta property="og:description" content="El tiempo en España en tiempo real. Pronóstico completo para cualquier municipio español.">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="icons/icon-512x512.png">
+  <meta property="og:image" content="https://ifendif2004.github.io/eltiempo/icons/icon-512x512.png">
 
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,20 +43,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Leaflet Maps -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous">
 
   <!-- Estilos Externos -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- CAPAS DE FONDO PARA TRANSICIÓN FLUIDA -->
-  <div id="bg-clear-day" class="bg-layer bg-clear-day active"></div>
-  <div id="bg-clear-night" class="bg-layer bg-clear-night"></div>
-  <div id="bg-cloudy" class="bg-layer bg-cloudy"></div>
-  <div id="bg-rainy" class="bg-layer bg-rainy"></div>
-  <div id="bg-snowy" class="bg-layer bg-snowy"></div>
-  <div id="bg-stormy" class="bg-layer bg-stormy"></div>
 
   <div class="app-container">
     
@@ -66,8 +56,8 @@
     <header>
       <div class="brand-section">
         <h1 class="logo">eltiempo<span>.</span></h1>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <button id="theme-toggle" class="theme-toggle-btn" title="Cambiar tema claro/oscuro">
+        <div class="brand-controls">
+          <button id="theme-toggle" class="theme-toggle-btn" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema claro/oscuro">
             <!-- Icono cargado dinámicamente por JS -->
           </button>
           <div id="current-date" class="date-badge">cargando fecha...</div>
@@ -85,13 +75,14 @@
             class="search-input" 
             placeholder="Buscar municipio de España..." 
             autocomplete="off"
+            aria-label="Buscar municipio"
           >
           <!-- Sugerencias -->
           <div id="suggestions" class="suggestions-dropdown"></div>
         </div>
         
         <!-- Botón GPS -->
-        <button id="gps-btn" class="gps-btn" title="Usar ubicación actual">
+        <button id="gps-btn" class="gps-btn" title="Usar ubicación actual" aria-label="Usar ubicación actual">
           <!-- Icono de Localización SVG -->
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"></path><circle cx="12" cy="10" r="3"></circle></svg>
         </button>
@@ -109,11 +100,11 @@
           <h3 class="map-title">Mapa Interactivo</h3>
         </div>
         <div class="map-controls">
-          <button id="map-layer-btn" class="map-layer-toggle" title="Cambiar capa del mapa">
+          <button id="map-layer-btn" class="map-layer-toggle" title="Cambiar capa del mapa" aria-label="Cambiar capa del mapa">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
             <span id="map-layer-label">Satélite</span>
           </button>
-          <button id="map-collapse-btn" class="map-collapse-btn" title="Mostrar/Ocultar mapa">
+          <button id="map-collapse-btn" class="map-collapse-btn" title="Mostrar/Ocultar mapa" aria-label="Mostrar u ocultar mapa">
             <svg id="map-collapse-icon" class="rotated" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
           </button>
         </div>
@@ -133,7 +124,7 @@
         <div id="map-city-popup" class="map-city-popup">
           <div class="map-popup-inner">
             <span id="map-popup-name" class="map-popup-name">—</span>
-            <button id="map-popup-load-btn" class="map-popup-load-btn">
+            <button id="map-popup-load-btn" class="map-popup-load-btn" aria-label="Ver el tiempo en esta ubicación">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
               Ver el tiempo aquí
             </button>
@@ -192,11 +183,11 @@
           </div>
           <span id="m-humidity" class="metric-value">--%</span>
         </div>
-        <!-- Lluvia / Precipitación -->
+        <!-- Precipitaciones -->
         <div class="metric-card">
           <div class="metric-header">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"></path><path d="M8 16v6M12 16v6M16 16v6"></path></svg>
-            <span>Lluvia</span>
+            <span>Precipitaciones</span>
           </div>
           <span id="m-precipitation" class="metric-value">-- mm</span>
         </div>
@@ -227,6 +218,38 @@
           </div>
           <span id="m-pressure" class="metric-value">-- hPa</span>
         </div>
+        <!-- Amanecer -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="2" x2="12" y2="9"></line><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"></line><line x1="1" y1="18" x2="3" y2="18"></line><line x1="21" y1="18" x2="23" y2="18"></line><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"></line><line x1="23" y1="22" x2="1" y2="22"></line><polyline points="8 6 12 2 16 6"></polyline></svg>
+            <span>Amanecer</span>
+          </div>
+          <span id="m-sunrise" class="metric-value">--:--</span>
+        </div>
+        <!-- Atardecer -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="9" x2="12" y2="2"></line><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"></line><line x1="1" y1="18" x2="3" y2="18"></line><line x1="21" y1="18" x2="23" y2="18"></line><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"></line><line x1="23" y1="22" x2="1" y2="22"></line><polyline points="16 5 12 9 8 5"></polyline></svg>
+            <span>Atardecer</span>
+          </div>
+          <span id="m-sunset" class="metric-value">--:--</span>
+        </div>
+        <!-- Calidad del Aire -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.58 0 8-2 3-6 5.58-8 10z"></path><path d="M9.8 6.1c.2 3.5 1.7 5.9 4.2 7.9"></path></svg>
+            <span>Calidad Aire</span>
+          </div>
+          <span id="m-aqi" class="metric-value">--</span>
+        </div>
+        <!-- Visibilidad -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Visibilidad</span>
+          </div>
+          <span id="m-visibility" class="metric-value">-- km</span>
+        </div>
       </div>
     </main>
 
@@ -238,9 +261,9 @@
       </div>
     </section>
 
-<!-- PRONÓSTICO 14 DÍAS -->
-      <section class="glass-card">
-        <h3 class="section-title">Pronóstico 14 Días</h3>
+    <!-- PRONÓSTICO 14 DÍAS -->
+    <section class="glass-card">
+      <h3 class="section-title">Pronóstico 14 Días</h3>
       <div id="daily-forecast" class="daily-forecast-container">
         <!-- Renderizado dinámico -->
       </div>
@@ -248,14 +271,14 @@
 
     <!-- FOOTER -->
     <footer class="app-footer">
-      <p>Datos meteorológicos proporcionados por <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> — Licencia CC BY 4.0</p>
+      <p>Datos meteorológicos y de calidad del aire proporcionados por <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> — Licencia CC BY 4.0</p>
       <p>Mapas © <a href="https://www.openstreetmap.org/" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contribuidores</p>
     </footer>
 
   </div>
 
   <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
 
   <!-- Lógica de Cliente -->
   <script src="script.js"></script>

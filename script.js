@@ -3,8 +3,8 @@ const QUICK_CITIES = [
   { name: "Cárchel", admin: "Jaén, Andalucía", lat: 37.6524, lon: -3.6364 },
   { name: "Breña Alta", admin: "La Palma, Canarias", lat: 28.6480, lon: -17.7954 },
   { name: "Montserrat Park", admin: "Barcelona, Cataluña", lat: 41.6082, lon: 1.7414 },
-  { name: "Madrid", admin: "Comunidad de Madrid", lat: 40.4168, lon: -3.7038 },
   { name: "Barcelona", admin: "Cataluña", lat: 41.3888, lon: 2.1590 },
+  { name: "Madrid", admin: "Comunidad de Madrid", lat: 40.4168, lon: -3.7038 },
   { name: "Sevilla", admin: "Andalucía", lat: 37.3828, lon: -5.9732 },
   { name: "Valencia", admin: "Comunidad Valenciana", lat: 39.4698, lon: -0.3774 },
   { name: "Bilbao", admin: "País Vasco", lat: 43.2627, lon: -2.9253 },
@@ -69,6 +69,10 @@ const mWind = document.getElementById('m-wind');
 const mWindDir = document.getElementById('m-wind-dir');
 const mUv = document.getElementById('m-uv');
 const mPressure = document.getElementById('m-pressure');
+const mSunrise = document.getElementById('m-sunrise');
+const mSunset = document.getElementById('m-sunset');
+const mAqi = document.getElementById('m-aqi');
+const mVisibility = document.getElementById('m-visibility');
 
 // Elementos de Pronósticos
 const hourlyForecastEl = document.getElementById('hourly-forecast');
@@ -89,7 +93,14 @@ let debounceTimer;
 let map;
 let currentMapLayer = 'osm';
 let mapMarker;
-let mapHintShown;
+let mapHintDismissed = false;
+
+// --- UTILIDADES ---
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
 
 // --- MAPA DE ICONOS SVG PREMIUM CON ANIMACIONES ---
 function getSvgIcon(iconName) {
@@ -182,7 +193,6 @@ function getSvgIcon(iconName) {
     "snow-moderate": `
       <svg viewBox="0 0 24 24" fill="none" stroke="#e1f5fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="rgba(255,255,255,0.2)" stroke="#ECEFF1" class="anim-float"></path>
-        <!-- Copo de nieve simplificado -->
         <path d="M8 20h0.01" stroke-width="3" stroke="#fff" class="anim-snow-1"></path>
         <path d="M12 21h0.01" stroke-width="3" stroke="#fff" class="anim-snow-2"></path>
         <path d="M16 20h0.01" stroke-width="3" stroke="#fff" class="anim-snow-3"></path>
@@ -191,7 +201,6 @@ function getSvgIcon(iconName) {
     "snow-heavy": `
       <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 10a5 5 0 0 0-9.5-2.5A5.5 5.5 0 0 0 2 13a5 5 0 0 0 5 5h11a4 4 0 0 0 0-8z" fill="rgba(255,255,255,0.3)" stroke="#ffffff" class="anim-float"></path>
-        <!-- Copos de nieve grandes -->
         <path d="M6 21l2-2M8 21l-2-2" class="anim-snow-1" stroke-width="1.5"></path>
         <path d="M12 22v-3M10.5 20.5h3" class="anim-snow-2" stroke-width="1.5"></path>
         <path d="M17 21l-2-2M15 21l2-2" class="anim-snow-3" stroke-width="1.5"></path>
@@ -235,6 +244,11 @@ document.addEventListener("DOMContentLoaded", () => {
       suggestionsDropdown.classList.remove('active');
     }
   });
+
+  // Manejar shortcut GPS del manifest (?action=gps)
+  if (window.location.search.includes('action=gps')) {
+    setTimeout(() => usarGeolocalizacion(), 500);
+  }
 });
 
 // --- REGISTRO DEL SERVICE WORKER (PWA) ---
@@ -242,11 +256,49 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
       .then((registration) => {
-        console.log('[PWA] Service Worker registrado. Scope:', registration.scope);
+        // Detectar cuando hay un nuevo SW instalándose
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (!newWorker) return;
+
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              mostrarBannerActualizacion();
+            }
+          });
+        });
       })
-      .catch((error) => {
-        console.error('[PWA] Error al registrar el Service Worker:', error);
+      .catch(() => {
+        // Error al registrar SW - silenciar en producción
       });
+
+    // Cuando el nuevo SW toma control, recargar la página
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
+  });
+}
+
+// --- BANNER DE ACTUALIZACIÓN ---
+function mostrarBannerActualizacion() {
+  if (document.getElementById('update-banner')) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'update-banner';
+  banner.className = 'update-banner';
+  banner.innerHTML = `
+    <span class="update-banner-text">Nueva versión disponible</span>
+    <button id="update-btn" class="update-btn">Actualizar</button>
+  `;
+
+  document.body.appendChild(banner);
+
+  document.getElementById('update-btn').addEventListener('click', () => {
+    window.location.reload();
   });
 }
 
@@ -308,8 +360,8 @@ function manejarBusqueda(e) {
       } else {
         mostrarNoResultados();
       }
-    } catch (error) {
-      console.error("Error al buscar municipios:", error);
+    } catch {
+      // Error al buscar municipios - silenciar en producción
     }
   }, 350);
 }
@@ -327,8 +379,8 @@ function mostrarSugerencias(results) {
 
     item.innerHTML = `
       <div>
-        <div class="suggestion-name">${place.name}</div>
-        <div class="suggestion-admin">${adminField}</div>
+        <div class="suggestion-name">${escapeHtml(place.name)}</div>
+        <div class="suggestion-admin">${escapeHtml(adminField)}</div>
       </div>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
     `;
@@ -382,7 +434,8 @@ function usarGeolocalizacion() {
         // NOTA: Se añade User-Agent para cumplir la política de Nominatim
         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`, {
           headers: {
-            'Accept-Language': 'es'
+            'Accept-Language': 'es',
+            'User-Agent': 'eltiempo-pwa/1.0'
           }
         });
         const data = await res.json();
@@ -402,8 +455,8 @@ function usarGeolocalizacion() {
         currentActiveCity = gpsCity;
         fetchWeather(gpsCity);
 
-      } catch (error) {
-        console.error("Error en geolocalización inversa:", error);
+      } catch {
+        // Error en geolocalización inversa - usar fallback
         // Fallback: cargar coordenadas sin nombre reverso
         const gpsCityFallback = { name: "Ubicación GPS", admin: `${lat.toFixed(3)}, ${lon.toFixed(3)}`, lat, lon };
         currentActiveCity = gpsCityFallback;
@@ -436,22 +489,34 @@ async function fetchWeather(city) {
   setLoading(true);
   ocultarError();
 
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,uv_index&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max&timezone=auto&forecast_days=14`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,uv_index,visibility&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max&timezone=auto&forecast_days=14`;
+  const urlAqi = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${city.lat}&longitude=${city.lon}&current=european_aqi&timezone=auto`;
 
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Error en la conexión con la API meteorológica.");
+    const [weatherRes, aqiRes] = await Promise.all([
+      fetch(url),
+      fetch(urlAqi).catch(() => {
+        // Error al consultar calidad del aire - continuar sin ella
+        return null;
+      })
+    ]);
 
-    const data = await res.json();
+    if (!weatherRes.ok) throw new Error("Error en la conexión con la API meteorológica.");
+    const weatherData = await weatherRes.json();
+
+    let aqiData = null;
+    if (aqiRes && aqiRes.ok) {
+      aqiData = await aqiRes.json();
+    }
 
     // Actualizar interfaz
-    actualizarClimaActual(city, data.current, data.daily);
-    actualizarMetricas(data.current);
-    actualizarPronosticoHoras(data.hourly);
-    actualizarPronosticoDiario(data.daily);
+    actualizarClimaActual(city, weatherData.current, weatherData.daily);
+    actualizarMetricas(weatherData.current, weatherData.daily, aqiData ? aqiData.current : null);
+    actualizarPronosticoHoras(weatherData.hourly, weatherData.daily);
+    actualizarPronosticoDiario(weatherData.daily);
 
-  } catch (error) {
-    console.error("Error al obtener los datos climáticos:", error);
+  } catch {
+    // Error al obtener datos climáticos
     mostrarError("Error al cargar la información meteorológica. Inténtalo de nuevo.");
   } finally {
     setLoading(false);
@@ -474,25 +539,20 @@ function actualizarClimaActual(city, current, daily) {
   const codeData = WMO_CODES[current.weather_code] || { text: "Variable", class: "cloudy", icon: "cloudy-day" };
   wDesc.textContent = codeData.text;
 
-  // Determinar si es de día o de noche para el icono e imágenes
+  // Determinar si es de día o de noche para el icono
   const isDay = current.is_day === 1;
   let finalIcon = codeData.icon;
-  let finalClass = codeData.class;
 
   if (!isDay) {
     if (codeData.iconNight) finalIcon = codeData.iconNight;
-    if (codeData.classNight) finalClass = codeData.classNight;
   }
 
   // Inyectar el SVG animado correspondiente
   wVisual.innerHTML = getSvgIcon(finalIcon);
-
-  // Cambiar fondo dinámico con transición de opacidad
-  cambiarFondo(finalClass);
 }
 
 // --- ACTUALIZAR INTERFAZ: MÉTRICAS AVANZADAS ---
-function actualizarMetricas(current) {
+function actualizarMetricas(current, daily, currentAqi) {
   mApparent.textContent = `${Math.round(current.apparent_temperature)}°C`;
   mHumidity.textContent = `${current.relative_humidity_2m}%`;
 
@@ -504,14 +564,51 @@ function actualizarMetricas(current) {
 
   // Dirección del viento (flecha rotatoria)
   mWindDir.style.transform = `rotate(${current.wind_direction_10m}deg)`;
-  mWindDir.title = `Viento del dirección ${current.wind_direction_10m}°`;
+  mWindDir.title = `Viento de dirección ${current.wind_direction_10m}°`;
 
   mUv.textContent = current.uv_index ? current.uv_index.toFixed(1) : "0.0";
   mPressure.textContent = `${Math.round(current.pressure_msl)} hPa`;
+
+  // Amanecer y Atardecer
+  if (daily && daily.sunrise && daily.sunrise[0]) {
+    const sunriseTime = new Date(daily.sunrise[0]).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    mSunrise.textContent = sunriseTime;
+  } else {
+    mSunrise.textContent = '--:--';
+  }
+
+  if (daily && daily.sunset && daily.sunset[0]) {
+    const sunsetTime = new Date(daily.sunset[0]).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    mSunset.textContent = sunsetTime;
+  } else {
+    mSunset.textContent = '--:--';
+  }
+
+  // Calidad del Aire (European AQI)
+  if (currentAqi && currentAqi.european_aqi !== undefined && currentAqi.european_aqi !== null) {
+    const aqi = currentAqi.european_aqi;
+    let desc = "Bueno";
+    if (aqi <= 40) desc = "Aceptable";
+    else if (aqi <= 60) desc = "Moderado";
+    else if (aqi <= 80) desc = "Malo";
+    else if (aqi <= 100) desc = "Muy malo";
+    else desc = "Extr. malo";
+    mAqi.textContent = `${desc} (${aqi})`;
+  } else {
+    mAqi.textContent = '--';
+  }
+
+  // Visibilidad
+  if (current.visibility !== undefined && current.visibility !== null) {
+    const visKm = (current.visibility / 1000).toFixed(1);
+    mVisibility.textContent = `${visKm} km`;
+  } else {
+    mVisibility.textContent = '-- km';
+  }
 }
 
 // --- ACTUALIZAR INTERFAZ: PRONÓSTICO 24 HORAS ---
-function actualizarPronosticoHoras(hourly) {
+function actualizarPronosticoHoras(hourly, daily) {
   hourlyForecastEl.innerHTML = "";
 
   // Obtener hora actual del cliente para mostrar a partir de ella
@@ -538,9 +635,17 @@ function actualizarPronosticoHoras(hourly) {
 
     const codeData = WMO_CODES[code] || { icon: "cloudy-day" };
 
-    // Decidir icono noche en base al sol en esa hora aproximada (ej. de 21h a 06h es noche)
-    const hourNumber = timeVal.getHours();
-    const esNoche = hourNumber >= 21 || hourNumber < 6;
+    // Determinar si es de noche usando sunrise/sunset reales del día correspondiente
+    let esNoche = false;
+    if (daily && daily.sunrise && daily.sunset) {
+      const dayDate = hourly.time[i].substring(0, 10);
+      const dayIdx = daily.time.indexOf(dayDate);
+      if (dayIdx !== -1) {
+        const sunrise = new Date(daily.sunrise[dayIdx]);
+        const sunset = new Date(daily.sunset[dayIdx]);
+        esNoche = timeVal < sunrise || timeVal > sunset;
+      }
+    }
     let finalIcon = codeData.icon;
     if (esNoche && codeData.iconNight) {
       finalIcon = codeData.iconNight;
@@ -610,30 +715,6 @@ function actualizarPronosticoDiario(daily) {
 
     dailyForecastEl.appendChild(item);
   }
-}
-
-// --- TRANSICIÓN DE FONDOS DINÁMICOS ---
-function cambiarFondo(activeThemeClass) {
-  // Mapeo del tema a su correspondiente div de fondo
-  const themeToLayerId = {
-    "clear-day": "bg-clear-day",
-    "clear-night": "bg-clear-night",
-    "cloudy": "bg-cloudy",
-    "rainy": "bg-rainy",
-    "snowy": "bg-snowy",
-    "stormy": "bg-stormy"
-  };
-
-  const targetId = themeToLayerId[activeThemeClass] || "bg-cloudy";
-
-  // Desactivar todos y activar el correcto
-  document.querySelectorAll('.bg-layer').forEach(layer => {
-    if (layer.id === targetId) {
-      layer.classList.add('active');
-    } else {
-      layer.classList.remove('active');
-    }
-  });
 }
 
 // --- MANEJO DE LOADER ---
@@ -706,9 +787,9 @@ function inicializarMapa() {
       const { lat, lng } = e.latlng;
 
       // Ocultar hint después del primer click
-      if (!mapHintShown) {
+      if (!mapHintDismissed) {
         document.getElementById('map-hint').classList.add('hidden');
-        mapHintShown = true;
+        mapHintDismissed = true;
       }
 
       // Actualizar marcador
@@ -750,8 +831,8 @@ function inicializarMapa() {
         loadBtn.dataset.admin = admin;
 
         popup.classList.add('visible');
-      } catch (error) {
-        console.error('Error reverse geocoding:', error);
+      } catch {
+        // Error reverse geocoding - mostrar coordenadas
         // Fallback: mostrar coordenadas
         const popup = document.getElementById('map-city-popup');
         const nameEl = document.getElementById('map-popup-name');
@@ -823,8 +904,8 @@ function inicializarMapa() {
         popup.classList.remove('visible');
       }
     });
-  } catch (error) {
-    console.error('Error inicializando mapa:', error);
+  } catch {
+    // Error inicializando mapa - silenciar
   }
 }
 
