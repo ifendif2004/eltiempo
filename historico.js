@@ -16,6 +16,7 @@ const locationLabel = document.getElementById('location-label');
 // --- ESTADO ---
 let tempChart = null;
 let currentLocation = { name: '', lat: 0, lon: 0 };
+let lastDailyData = null;
 
 // --- INICIALIZACIÓN ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -198,6 +199,7 @@ async function fetchHistoricalData() {
       saveToCache(cacheKey, daily);
     }
 
+    lastDailyData = daily;
     renderChart(daily);
     renderStats(daily);
 
@@ -211,6 +213,30 @@ async function fetchHistoricalData() {
   } finally {
     setLoading(false);
   }
+}
+
+// --- AGREGAR DATOS PARA MÓVIL ---
+function aggregateData(daily, targetPoints) {
+  const time = daily.time;
+  const max = daily.temperature_2m_max;
+  const min = daily.temperature_2m_min;
+  const total = time.length;
+  const groupSize = Math.ceil(total / targetPoints);
+
+  const aggTime = [];
+  const aggMax = [];
+  const aggMin = [];
+
+  for (let i = 0; i < total; i += groupSize) {
+    const sliceMax = max.slice(i, i + groupSize).filter(v => v !== null);
+    const sliceMin = min.slice(i, i + groupSize).filter(v => v !== null);
+
+    aggTime.push(time[i]);
+    aggMax.push(sliceMax.length ? Math.round((sliceMax.reduce((a, b) => a + b, 0) / sliceMax.length) * 10) / 10 : null);
+    aggMin.push(sliceMin.length ? Math.round((sliceMin.reduce((a, b) => a + b, 0) / sliceMin.length) * 10) / 10 : null);
+  }
+
+  return { time: aggTime, temperature_2m_max: aggMax, temperature_2m_min: aggMin };
 }
 
 // --- RENDERIZAR GRÁFICO CON CHART.JS ---
@@ -229,12 +255,13 @@ function renderChart(daily) {
   const textColor = styles.getPropertyValue('--text-main').trim();
   const gridColor = styles.getPropertyValue('--glass-border').trim();
 
-  // Preparar labels con formato legible
-  const labels = daily.time;
-  const totalPoints = labels.length;
+  // Agregar datos en móvil para reducir barras
+  const isMobile = window.innerWidth <= 768;
+  const displayDaily = isMobile && daily.time.length > 30 ? aggregateData(daily, 30) : daily;
 
-  // Determinar si necesitamos reducir puntos para rendimiento
-  const showPointRadius = totalPoints <= 60;
+  // Preparar labels con formato legible
+  const labels = displayDaily.time;
+  const totalPoints = labels.length;
 
   tempChart = new Chart(ctx, {
     type: 'line',
@@ -243,26 +270,26 @@ function renderChart(daily) {
       datasets: [
         {
           label: 'Máxima (°C)',
-          data: daily.temperature_2m_max,
+          data: displayDaily.temperature_2m_max,
           borderColor: colorMax,
           backgroundColor: hexToRgba(colorMax, 0.1),
           borderWidth: 2,
           fill: '+1',
           tension: 0.35,
-          pointRadius: showPointRadius ? 3 : 0,
+          pointRadius: totalPoints <= 60 ? 3 : 0,
           pointHoverRadius: 5,
           pointBackgroundColor: colorMax,
           order: 1
         },
         {
           label: 'Mínima (°C)',
-          data: daily.temperature_2m_min,
+          data: displayDaily.temperature_2m_min,
           borderColor: colorMin,
           backgroundColor: hexToRgba(colorMin, 0.1),
           borderWidth: 2,
           fill: false,
           tension: 0.35,
-          pointRadius: showPointRadius ? 3 : 0,
+          pointRadius: totalPoints <= 60 ? 3 : 0,
           pointHoverRadius: 5,
           pointBackgroundColor: colorMin,
           order: 2
@@ -278,7 +305,7 @@ function renderChart(daily) {
       },
       plugins: {
         legend: {
-          display: false // Usamos la leyenda custom
+          display: false
         },
         tooltip: {
           backgroundColor: 'rgba(15, 20, 30, 0.92)',
@@ -363,9 +390,9 @@ function renderStats(daily) {
   statsSection.style.display = '';
   statsSection.style.animation = 'histFadeIn 0.5s ease forwards';
 
-  // Máxima registrada
   let maxTemp = -Infinity, maxDate = '';
   let minTemp = Infinity, minDate = '';
+  let sumMax = 0, sumMin = 0, countMax = 0, countMin = 0;
 
   for (let i = 0; i < daily.time.length; i++) {
     const tMax = daily.temperature_2m_max[i];
@@ -379,16 +406,18 @@ function renderStats(daily) {
       minTemp = tMin;
       minDate = daily.time[i];
     }
+    if (tMax !== null) { sumMax += tMax; countMax++; }
+    if (tMin !== null) { sumMin += tMin; countMin++; }
   }
 
-  const avgTemp = (maxTemp + minTemp) / 2;
+  const avgTemp = (countMax > 0 && countMin > 0) ? ((sumMax + sumMin) / (countMax + countMin)) : 0;
   const rangeTemp = maxTemp - minTemp;
 
   document.getElementById('stat-max').textContent = `${maxTemp.toFixed(1)}°C`;
-  document.getElementById('stat-max-date').textContent = formatDateDisplay(maxDate);
+  document.getElementById('stat-max-date').textContent = `📅 ${formatDateDisplay(maxDate)}`;
 
   document.getElementById('stat-min').textContent = `${minTemp.toFixed(1)}°C`;
-  document.getElementById('stat-min-date').textContent = formatDateDisplay(minDate);
+  document.getElementById('stat-min-date').textContent = `📅 ${formatDateDisplay(minDate)}`;
 
   document.getElementById('stat-avg').textContent = `${avgTemp.toFixed(1)}°C`;
 
@@ -437,6 +466,14 @@ function hexToRgba(hex, alpha) {
 }
 
 function getMaxTicks(totalPoints) {
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    if (totalPoints <= 7) return totalPoints;
+    if (totalPoints <= 30) return 6;
+    if (totalPoints <= 90) return 5;
+    if (totalPoints <= 365) return 6;
+    return 8;
+  }
   if (totalPoints <= 14) return totalPoints;
   if (totalPoints <= 60) return 10;
   if (totalPoints <= 365) return 12;
@@ -490,16 +527,12 @@ function toggleTema() {
   const themeBtn = document.getElementById('theme-toggle');
   const isLight = document.body.classList.toggle('light-mode');
 
-  localStorage.setItem('eltiempo-theme', isLight ? 'light' : 'dark');
+  try { localStorage.setItem('eltiempo-theme', isLight ? 'light' : 'dark'); } catch {}
   themeBtn.innerHTML = isLight ? SVG_MOON : SVG_SUN;
   themeBtn.title = isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro';
 
-  // Re-renderizar gráfico con nuevos colores del tema
-  if (tempChart) {
-    const startDate = dateStartInput.value;
-    const endDate = dateEndInput.value;
-    if (startDate && endDate) {
-      fetchHistoricalData();
-    }
+  // Re-renderizar gráfico con nuevos colores del tema (sin re-fetch)
+  if (tempChart && lastDailyData) {
+    renderChart(lastDailyData);
   }
 }

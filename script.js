@@ -81,7 +81,6 @@ const dailyForecastEl = document.getElementById('daily-forecast');
 // Elementos del Mapa
 const mapSection = document.getElementById('map-section');
 const mapWrapper = document.getElementById('map-wrapper');
-const mapHint = document.getElementById('map-hint');
 const mapCityPopup = document.getElementById('map-city-popup');
 const mapPopupName = document.getElementById('map-popup-name');
 
@@ -92,8 +91,17 @@ let debounceTimer;
 // --- ESTADO DEL MAPA ---
 let map;
 let currentMapLayer = 'osm';
-let mapMarker;
+let mapMarker = null;
 let mapHintDismissed = false;
+
+// --- RATE LIMITING NOMINATIM ---
+let nominatimCooldown = false;
+let gpsAbortController = null;
+
+// Limpiar timers al salir de la página
+window.addEventListener('beforeunload', () => {
+  if (debounceTimer) clearTimeout(debounceTimer);
+});
 
 // --- UTILIDADES ---
 function escapeHtml(str) {
@@ -423,6 +431,12 @@ function usarGeolocalizacion() {
     return;
   }
 
+  // Cancelar petición GPS anterior si existe
+  if (gpsAbortController) {
+    gpsAbortController.abort();
+  }
+  gpsAbortController = new AbortController();
+
   setLoading(true);
   navigator.geolocation.getCurrentPosition(
     async (position) => {
@@ -436,7 +450,8 @@ function usarGeolocalizacion() {
           headers: {
             'Accept-Language': 'es',
             'User-Agent': 'eltiempo-pwa/1.0'
-          }
+          },
+          signal: gpsAbortController.signal
         });
         const data = await res.json();
 
@@ -455,7 +470,9 @@ function usarGeolocalizacion() {
         currentActiveCity = gpsCity;
         fetchWeather(gpsCity);
 
-      } catch {
+      } catch (err) {
+        // Ignorar si se canceló por nueva petición
+        if (err.name === 'AbortError') return;
         // Error en geolocalización inversa - usar fallback
         // Fallback: cargar coordenadas sin nombre reverso
         const gpsCityFallback = { name: "Ubicación GPS", admin: `${lat.toFixed(3)}, ${lon.toFixed(3)}`, lat, lon };
@@ -561,9 +578,9 @@ function actualizarClimaActual(city, current, daily) {
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>
       Ver Histórico
     `;
-    const locInfo = document.querySelector('.location-info');
-    if (locInfo) {
-      locInfo.appendChild(histBtn);
+    const tempSection = document.querySelector('.temp-section');
+    if (tempSection) {
+      tempSection.appendChild(histBtn);
     }
   }
   histBtn.href = `historico.html?lat=${city.lat}&lon=${city.lon}&name=${encodeURIComponent(city.name)}&admin=${encodeURIComponent(city.admin || '')}`;
@@ -629,9 +646,13 @@ function actualizarMetricas(current, daily, currentAqi) {
 function actualizarPronosticoHoras(hourly, daily) {
   hourlyForecastEl.innerHTML = "";
 
-  // Obtener hora actual del cliente para mostrar a partir de ella
+  // Obtener hora actual LOCAL del cliente (formato YYYY-MM-DDTHH)
   const ahora = new Date();
-  const horaActualStr = ahora.toISOString().substring(0, 13); // "YYYY-MM-DDTHH"
+  const localYear = ahora.getFullYear();
+  const localMonth = String(ahora.getMonth() + 1).padStart(2, '0');
+  const localDay = String(ahora.getDate()).padStart(2, '0');
+  const localHour = String(ahora.getHours()).padStart(2, '0');
+  const horaActualStr = `${localYear}-${localMonth}-${localDay}T${localHour}`;
 
   // Encontrar el índice de inicio en el dataset de la API
   let inicioIdx = 0;
@@ -800,8 +821,12 @@ function inicializarMapa() {
       html: '<div class="map-marker-pulse"></div>'
     });
 
-    // Evento click en el mapa
+    // Evento click en el mapa (con debounce para respetar rate limit de Nominatim)
     map.on('click', async (e) => {
+      if (nominatimCooldown) return;
+      nominatimCooldown = true;
+      setTimeout(() => { nominatimCooldown = false; }, 1500);
+
       const { lat, lng } = e.latlng;
 
       // Ocultar hint después del primer click
@@ -948,7 +973,8 @@ const SVG_SUN = `
 
 function inicializarTema() {
   const themeBtn = document.getElementById('theme-toggle');
-  const savedTheme = localStorage.getItem('eltiempo-theme');
+  let savedTheme;
+  try { savedTheme = localStorage.getItem('eltiempo-theme'); } catch {}
   const isLight = savedTheme === 'light';
 
   if (isLight) {
@@ -963,7 +989,7 @@ function toggleTema() {
   const themeBtn = document.getElementById('theme-toggle');
   const isLight = document.body.classList.toggle('light-mode');
 
-  localStorage.setItem('eltiempo-theme', isLight ? 'light' : 'dark');
+  try { localStorage.setItem('eltiempo-theme', isLight ? 'light' : 'dark'); } catch {}
   themeBtn.innerHTML = isLight ? SVG_MOON : SVG_SUN;
   themeBtn.title = isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro';
 }

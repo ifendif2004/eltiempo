@@ -13,6 +13,7 @@
 
   <!-- Theme Color (barra del navegador en Android) -->
   <meta name="theme-color" content="#1fa2ff">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self' https://*.open-meteo.com https://nominatim.openstreetmap.org https://unpkg.com;">
   <meta name="msapplication-TileColor" content="#1fa2ff">
   <meta name="msapplication-TileImage" content="https://ifendif2004.github.io/eltiempo/icons/icon-144x144.png">
 
@@ -43,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Leaflet Maps -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H">
 
   <!-- Estilos Externos -->
   <link rel="stylesheet" href="style.css">
@@ -84,7 +85,7 @@
         <!-- Botón GPS -->
         <button id="gps-btn" class="gps-btn" title="Usar ubicación actual" aria-label="Usar ubicación actual">
           <!-- Icono de Localización SVG -->
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"></path><circle cx="12" cy="10" r="3"></circle></svg>
         </button>
       </div>
 
@@ -134,7 +135,7 @@
     </section>
 
     <!-- MENSAJE DE ERROR -->
-    <div id="error-message" class="error-message"></div>
+    <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
 
     <!-- SECCIÓN CLIMA ACTUAL -->
     <main class="glass-card current-weather-card">
@@ -278,7 +279,7 @@
   </div>
 
   <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH"></script>
 
   <!-- Lógica de Cliente -->
   <script src="script.js"></script>

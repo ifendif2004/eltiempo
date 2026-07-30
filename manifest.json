@@ -3,6 +3,7 @@
   "short_name": "eltiempo.",
   "description": "Aplicación del tiempo para España con pronóstico actual, por horas y semanal. Datos en tiempo real.",
   "start_url": "./index.html",
+  "id": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",

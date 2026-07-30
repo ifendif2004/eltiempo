@@ -3,8 +3,8 @@
 // Estrategia: Cache-First para assets, Network-First para API
 // ============================================================
 
-const STATIC_CACHE = 'eltiempo-static-v1.0.6';
-const API_CACHE = 'eltiempo-api-v1.0.6';
+const STATIC_CACHE = 'eltiempo-static-v1.0.7';
+const API_CACHE = 'eltiempo-api-v1.0.7';
 
 // Assets estáticos para cachear en la instalación
 const STATIC_ASSETS = [
@@ -16,6 +16,7 @@ const STATIC_ASSETS = [
   './historico.css',
   './historico.js',
   './manifest.json',
+  './offline.html',
   './icons/icon-72x72.png',
   './icons/icon-96x96.png',
   './icons/icon-128x128.png',
@@ -38,19 +39,19 @@ const API_URLS = [
 ];
 
 // ============================================================
-// INSTALL: Pre-cachear todos los assets estáticos
+// INSTALL: Pre-cachear assets estáticos (tolerante a fallos de CDN)
 // ============================================================
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => {
-        return cache.addAll(STATIC_ASSETS);
+        // Usar Promise.allSettled para que fallos de CDN no rompan la instalación
+        return Promise.allSettled(
+          STATIC_ASSETS.map((url) => cache.add(url).catch(() => null))
+        );
       })
       .then(() => {
-        return self.skipWaiting(); // Activar inmediatamente
-      })
-      .catch(() => {
-        // Error al cachear assets - silenciar
+        return self.skipWaiting();
       })
   );
 });
@@ -125,7 +126,7 @@ async function cacheFirstStrategy(request, cacheName) {
     return networkResponse;
   } catch (error) {
     // Si falla todo, intentar devolver la página offline
-    const offlinePage = await caches.match('./index.html');
+    const offlinePage = await caches.match('./offline.html');
     return offlinePage || new Response('Sin conexión', {
       status: 503,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' }
