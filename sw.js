@@ -3,8 +3,8 @@
 // Estrategia: Cache-First para assets, Network-First para API
 // ============================================================
 
-const STATIC_CACHE = 'eltiempo-static-v1.0.7';
-const API_CACHE = 'eltiempo-api-v1.0.7';
+const STATIC_CACHE = 'eltiempo-static-v1.0.8';
+const API_CACHE = 'eltiempo-api-v1.0.8';
 
 // Assets estáticos para cachear en la instalación
 const STATIC_ASSETS = [
@@ -26,7 +26,9 @@ const STATIC_ASSETS = [
   './icons/icon-384x384.png',
   './icons/icon-512x512.png',
   'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap',
-  'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js'
+  'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js',
+  'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
+  'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js'
 ];
 
 // URLs de API externas (network-first con fallback a cache)

@@ -621,3 +621,40 @@ body.light-mode .hist-fetch-btn:hover {
     font-size: 0.8rem;
   }
 }
+
+/* ==========================================
+   FLATPICKR — Solo ajuste de colores
+   ========================================== */
+
+.flatpickr-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--input-bg) !important;
+  color: var(--text-main);
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  outline: none;
+  transition: all var(--transition-speed) ease;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+
+.flatpickr-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.15);
+}
+
+body.light-mode .flatpickr-input:focus {
+  box-shadow: 0 0 0 3px rgba(224, 123, 57, 0.15);
+}
+
+.flatpickr-calendar {
+  border-radius: 16px !important;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.light-mode .flatpickr-calendar {
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15) !important;
+}

@@ -17,6 +17,29 @@ const locationLabel = document.getElementById('location-label');
 let tempChart = null;
 let currentLocation = { name: '', lat: 0, lon: 0 };
 let lastDailyData = null;
+let fpStart = null;
+let fpEnd = null;
+
+// --- FORMATEAR FECHA YYYY-MM-DD ---
+function formatDate(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// --- NORMALIZAR FECHA A MEDIANOCHE (evita problemas de comparación horaria) ---
+function dateOnly(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+// --- OBTENER FECHA EN FORMATO API (YYYY-MM-DD) ---
+function getApiDate(fpInstance) {
+  if (!fpInstance || !fpInstance.selectedDates || !fpInstance.selectedDates.length) {
+    return '';
+  }
+  return fpInstance.formatDate(fpInstance.selectedDates[0], 'Y-m-d');
+}
 
 // --- INICIALIZACIÓN ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -37,14 +60,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const haceUnAnio = new Date(ayer);
   haceUnAnio.setFullYear(haceUnAnio.getFullYear() - 1);
 
-  // La API histórica va hasta ayer como máximo (hoy puede no tener datos aún)
-  dateStartInput.min = '1940-01-01';
-  dateEndInput.min = '1940-01-01';
-  dateStartInput.max = formatDate(ayer);
-  dateEndInput.max = formatDate(ayer);
+  const startStr = `${String(haceUnAnio.getDate()).padStart(2,'0')}/${String(haceUnAnio.getMonth()+1).padStart(2,'0')}/${haceUnAnio.getFullYear()}`;
+  const endStr = `${String(ayer.getDate()).padStart(2,'0')}/${String(ayer.getMonth()+1).padStart(2,'0')}/${ayer.getFullYear()}`;
 
-  dateEndInput.value = formatDate(ayer);
-  dateStartInput.value = formatDate(haceUnAnio);
+  fpStart = flatpickr(dateStartInput, {
+    dateFormat: 'd/m/Y',
+    monthSelectorType: 'dropdown',
+    yearSelectorType: 'dropdown',
+    minDate: '01/01/1940',
+    maxDate: endStr,
+    defaultDate: startStr,
+    onChange: function(selectedDates) {
+      if (selectedDates.length && fpEnd) {
+        fpEnd.set('minDate', dateOnly(selectedDates[0]));
+      }
+    }
+  });
+
+  fpEnd = flatpickr(dateEndInput, {
+    dateFormat: 'd/m/Y',
+    monthSelectorType: 'dropdown',
+    yearSelectorType: 'dropdown',
+    minDate: '01/01/1940',
+    maxDate: endStr,
+    defaultDate: endStr,
+    onChange: function(selectedDates) {
+      if (selectedDates.length && fpStart) {
+        fpStart.set('maxDate', dateOnly(selectedDates[0]));
+      }
+    }
+  });
 
   // Tema claro/oscuro
   inicializarTema();
@@ -57,8 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.hist-range-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const range = btn.dataset.range;
-      const end = new Date(ayer);
-      const start = new Date(ayer);
+      const end = dateOnly(ayer);
+      const start = new Date(end);
 
       switch (range) {
         case '7d':
@@ -78,8 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
           break;
       }
 
-      dateStartInput.value = formatDate(start);
-      dateEndInput.value = formatDate(end);
+      fpStart.setDate(start, true);
+      fpEnd.setDate(end, true);
 
       // Actualizar estado activo
       document.querySelectorAll('.hist-range-btn').forEach(b => b.classList.remove('active'));
@@ -91,14 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchHistoricalData();
 });
 
-
-// --- FORMATEAR FECHA YYYY-MM-DD ---
-function formatDate(d) {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
 
 // --- FORMATEAR FECHA PARA MOSTRAR ---
 function formatDateDisplay(dateStr) {
@@ -146,8 +183,8 @@ function cleanOldCache() {
 
 // --- CONSULTAR DATOS HISTÓRICOS ---
 async function fetchHistoricalData() {
-  const startDate = dateStartInput.value;
-  const endDate = dateEndInput.value;
+  const startDate = getApiDate(fpStart);
+  const endDate = getApiDate(fpEnd);
 
   if (!startDate || !endDate) {
     showError('Selecciona ambas fechas para consultar los datos.');

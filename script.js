@@ -1,14 +1,15 @@
 // --- DATOS Y ATAJOS PREDEFINIDOS ---
 const QUICK_CITIES = [
   { name: "Cárchel", admin: "Jaén, Andalucía", lat: 37.6524, lon: -3.6364 },
-  { name: "Breña Alta", admin: "La Palma, Canarias", lat: 28.6480, lon: -17.7954 },
-  { name: "Montserrat Park", admin: "Barcelona, Cataluña", lat: 41.6082, lon: 1.7414 },
   { name: "Barcelona", admin: "Cataluña", lat: 41.3888, lon: 2.1590 },
   { name: "Madrid", admin: "Comunidad de Madrid", lat: 40.4168, lon: -3.7038 },
   { name: "Sevilla", admin: "Andalucía", lat: 37.3828, lon: -5.9732 },
   { name: "Valencia", admin: "Comunidad Valenciana", lat: 39.4698, lon: -0.3774 },
   { name: "Bilbao", admin: "País Vasco", lat: 43.2627, lon: -2.9253 },
-  { name: "Zaragoza", admin: "Aragón", lat: 41.6561, lon: -0.8773 }
+  { name: "Zaragoza", admin: "Aragón", lat: 41.6561, lon: -0.8773 },
+  { name: "Breña Alta", admin: "La Palma, Canarias", lat: 28.6480, lon: -17.7954 },
+  { name: "Montserrat Park", admin: "Barcelona, Cataluña", lat: 41.6082, lon: 1.7414 }
+
 ];
 
 // Códigos de Clima de la WMO (World Meteorological Organization)
@@ -974,7 +975,7 @@ const SVG_SUN = `
 function inicializarTema() {
   const themeBtn = document.getElementById('theme-toggle');
   let savedTheme;
-  try { savedTheme = localStorage.getItem('eltiempo-theme'); } catch {}
+  try { savedTheme = localStorage.getItem('eltiempo-theme'); } catch { }
   const isLight = savedTheme === 'light';
 
   if (isLight) {
@@ -989,7 +990,7 @@ function toggleTema() {
   const themeBtn = document.getElementById('theme-toggle');
   const isLight = document.body.classList.toggle('light-mode');
 
-  try { localStorage.setItem('eltiempo-theme', isLight ? 'light' : 'dark'); } catch {}
+  try { localStorage.setItem('eltiempo-theme', isLight ? 'light' : 'dark'); } catch { }
   themeBtn.innerHTML = isLight ? SVG_MOON : SVG_SUN;
   themeBtn.title = isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro';
 }

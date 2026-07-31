@@ -9,7 +9,7 @@
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1fa2ff">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.open-meteo.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.open-meteo.com;">
 
   <!-- iOS / Safari PWA -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -27,7 +27,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
 
   <!-- Estilos -->
   <link rel="stylesheet" href="historico.css">
@@ -71,14 +75,14 @@
       <div class="hist-date-row">
         <div class="hist-date-field">
           <label for="date-start">Fecha de inicio</label>
-          <input type="date" id="date-start" class="hist-date-input">
+          <input type="text" id="date-start" class="hist-date-input">
         </div>
         <div class="hist-date-separator">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </div>
         <div class="hist-date-field">
           <label for="date-end">Fecha de fin</label>
-          <input type="date" id="date-end" class="hist-date-input">
+          <input type="text" id="date-end" class="hist-date-input">
         </div>
       </div>
 
